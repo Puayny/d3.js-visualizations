@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Expected Expenditure</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.2/d3.min.js"></script>
+<script src="sgData.js"></script>
+
+<style>
+#graphAge text {
+    text-align: center;
+}
+.hidden {
+    opacity: 0;
+}
+input {
+    text-align: right;
+}
+.svgText {
+    pointer-events: none;
+}
+</style>
+</head>
+
+<body>
+<div id='ppnPyramid'></div>
+
+<input type="range" min="1990" max="2016" value="1990" step="1" name="year" oninput=change()>
+<div>Year: <span id="yearDisplay">1990</span></div>
+<script>
+
+var yearToDisplay = 1990
+function change() {
+    yearToDisplay = document.getElementsByName('year')[0].value
+    document.querySelector('#yearDisplay').innerHTML = yearToDisplay
+    drawChart();
+}
+
+data = data.age_structure
+
+var dataLeft = []
+var dataRight = []
+var dataAge = []
+
+function getData() {
+    dataLeft = [];
+    dataRight = [];
+    dataAge = [];
+    for (var i=0; i<data.length; i++) {
+        if (data[i].resident_type == "Total Male Residents" && data[i].year==yearToDisplay) {
+            var yearGroup = {}
+            yearGroup.cnt = Math.round(data[i].cnt/1000)
+            yearGroup.age_group = data[i].age_group
+            dataLeft.push(yearGroup)
+            dataAge.push(yearGroup.age_group)
+        }
+        else if (data[i].resident_type == "Total Female Residents" && data[i].year==yearToDisplay) {
+            var yearGroup = {}
+            yearGroup.cnt = Math.round(data[i].cnt/1000)
+            yearGroup.age_group = data[i].age_group
+            dataRight.push(yearGroup)
+        }
+    }
+
+
+    dataLeft.sort(function(a, b) {
+            a = parseInt(a.age_group.substring(0,2).trim())
+            b = parseInt(b.age_group.substring(0,2).trim())
+            return b - a
+        })
+
+    dataRight.sort(function(a, b) {
+            a = parseInt(a.age_group.substring(0,2).trim())
+            b = parseInt(b.age_group.substring(0,2).trim())
+            return b - a
+        })
+
+    dataAge.sort(function(a, b) {
+            a = parseInt(a.substring(0,2).trim())
+            b = parseInt(b.substring(0,2).trim())
+            return b - a
+        })
+}
+
+var margins = { top: 50, bottom: 50, left: 50, right: 50 },
+    svgHeight = 500, svgWidth = 500,
+    ageWidth = 75.0,
+    graphHeight = svgHeight - margins.top - margins.bottom,
+    graphWidthTotal = svgWidth - margins.left - margins.right,
+    graphWidthEach = (graphWidthTotal - ageWidth) / 2;
+
+var svg = 
+    d3.select('#ppnPyramid')
+        .append('svg', ':first-child')
+        .attr('width', svgWidth)
+        .attr('height', svgHeight)
+
+var graphTotal = 
+    svg.append('g')
+        .attr('id', 'graphTotal')
+        .attr('transform', 'translate('+margins.left+','+margins.top+')')
+
+var graphLeft =
+    graphTotal.append('g')
+        .attr('id', 'graphLeft')
+
+var graphRight =
+    graphTotal.append('g')
+        .attr('id', 'graphRight')
+        .attr('transform', 'translate('+(graphWidthEach+ageWidth)+','+0+')')
+
+var graphAge =
+    graphTotal.append('g')
+        .attr('id', 'graphAge')
+        .attr('transform', 'translate('+(graphWidthEach)+','+0+')')
+
+var xAxisLeft = d3.scaleLinear();
+function drawXAxisLeft() {
+    xAxisLeft.range([graphWidthEach,0]);
+    xAxisLeft.domain([0,200])
+    graphLeft.append('g')
+        .attr('class','xAxis')
+        .attr('transform', 'translate(' + 0 + ',' + graphHeight + ')')
+        .call(d3.axisBottom(xAxisLeft).ticks(4));
+}
+
+var xAxisRight = d3.scaleLinear();
+function drawXAxisRight() {
+    xAxisRight.range([0,graphWidthEach]);
+    xAxisRight.domain([0,200])
+    graphRight.append('g')
+        .attr('class','xAxis')
+        .attr('transform', 'translate(' + 0 + ',' + graphHeight + ')')
+        .call(d3.axisBottom(xAxisRight).ticks(4));
+}
+
+var barHeight = graphHeight / 18 - 1;
+
+function toggleHidden() {
+    this.children[1].classList.toggle("hidden")
+}
+
+function drawLeftGraph() {
+    var graphLeftBars = graphLeft.selectAll('fillerName')
+        .data(dataLeft)
+          .enter()
+          .append('g')
+              .attr('height', barHeight)
+              .attr('width', function(d, i) { return graphWidthEach - xAxisLeft(d.cnt) } )
+            .attr('transform', function(d, i) {
+                return 'translate(' + graphWidthEach + ',' + i*(barHeight+1) + ')'
+            } )
+            .on('mouseenter', toggleHidden)
+            .on('mouseleave', toggleHidden)
+
+    graphLeftBars.append('rect')
+        .attr('fill', 'yellow')
+        .attr('height', barHeight)
+        .attr('width', function(d, i) { return graphWidthEach - xAxisLeft(d.cnt) } )
+        .attr('x', function(d, i) { return -1 * (graphWidthEach - xAxisLeft(d.cnt)) } )
+
+    graphLeftBars.append('text')
+        .attr('y', 15)
+        .attr('class', 'hidden svgText')
+        .attr('text-anchor', 'end')
+        .text(function(d, i) { return d.cnt })
+}
+
+function drawRightGraph() {
+    var graphRightBars = graphRight.selectAll('fillerName')
+        .data(dataRight)
+          .enter()
+          .append('g')
+              .attr('height', barHeight)
+            .attr('width', function(d, i) { return xAxisRight(d.cnt) } )
+            .attr('transform', function(d, i) {
+                return 'translate(' + 0 + ',' + i*(barHeight+1) + ')'
+            } )
+            .on('mouseenter', toggleHidden)
+            .on('mouseleave', toggleHidden)
+
+    graphRightBars.append('rect')
+        .attr('fill', 'lightblue')
+        .attr('height', barHeight)
+        .attr('width', function(d, i) { return xAxisRight(d.cnt) } )
+
+    graphRightBars.append('text')
+        .attr('y', 15)
+        .attr('class', 'hidden svgText')
+        .text(function(d, i) { return d.cnt })
+}
+
+function drawAxisTitles() {
+    graphAge.append('text')
+        .attr('y', graphHeight + 40)
+        .attr('x', ageWidth/2)
+        .attr('text-anchor', 'middle')
+        .text('Age Group')
+
+    graphAge.append('text')
+        .attr('y', -30)
+        .attr('x', ageWidth/2)
+        .attr('text-anchor', 'middle')
+        .text('Population of Singapore by gender and age group over the years')
+    graphAge.append('text')
+        .attr('y', -10)
+        .attr('x', ageWidth/2)
+        .attr('text-anchor', 'middle')
+        .text('(All numbers given in thousands)')
+
+    graphLeft.append('text')
+        .attr('y', graphHeight + 40)
+        .attr('x', graphWidthEach/2)
+        .attr('text-anchor', 'middle')
+        .text('Num. males')
+
+    graphRight.append('text')
+        .attr('y', graphHeight + 40)
+        .attr('x', graphWidthEach/2)
+        .attr('text-anchor', 'middle')
+        .text('Num. females')
+}
+
+function drawAgeGraph() {
+    graphAge.selectAll('fillerName')
+        .data(dataAge)
+          .enter().append('text')
+            .attr('height', barHeight)
+            .attr('y', function(d, i) { return (i+1)*(barHeight+1) - 8 } )
+            .attr('x', ageWidth/2)
+            .attr('text-anchor', 'middle')
+            .text(function(d, i) { return d } )
+}
+
+function clearGraph() {
+    graphRight.selectAll('*').remove();
+    graphLeft.selectAll('*').remove();
+    graphAge.selectAll('*').remove();
+}
+
+function drawChart() {
+    clearGraph();
+    getData();
+    drawAxisTitles();
+    drawXAxisLeft();
+    drawXAxisRight();
+    drawLeftGraph();
+    drawRightGraph();
+    drawAgeGraph();
+}
+drawChart();
+
+</script>
+</body>
+</html>
