@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Expected Expenditure</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.2/d3.min.js"></script>
+
+<!-- for bootstrap -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.18.0/d3-legend.min.js"></script>
+
+<style>
+
+th {
+	text-align: center;
+	font-size: 1.05em;
+}
+
+.legendOrdinal text {
+	font-size: 1em;
+	font-family: sans-serif;
+	font-weight: normal;
+}
+
+.legendTitle {
+	font-size: 1.1em;
+	font-family: sans-serif;
+	font-weight: normal;
+}
+
+.tooltipText {
+	font-family: sans-serif;
+	font-size: 15px;
+}
+
+.xAxis {
+	font-family: sans-serif;
+}
+.yAxis {
+	font-family: sans-serif;	
+}
+.axisLabel {
+	font-family: sans-serif;
+	font-size: 15px;
+	text-anchor: middle;
+}
+.graphTitle {
+	font-family: sans-serif;
+	font-size: 17px;
+	text-anchor: middle;
+	font-weight: bold;
+}
+.childDetailsInput {
+	margin-left: 50px;
+}
+.dataTable {
+	outline: 1px dotted rgb(0,100,100);
+}
+.btn {
+	background-color: rgb(245,250,250);
+}
+body {
+	padding-top:55px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class='container' id='expenditureChart'></div>
+<div class='container dataTable'>
+	<div class='table-responsive'>
+	<table class='table table-hover' id="demographicDataInput">
+		<thead>
+		<tr>
+			<th colspan=3>Basic data</th>
+		</tr>
+		<tr>
+			<td>Current age</td>
+			<td>Life Expectancy</td>
+			<td>Inflation rate (%)</td>
+		</tr>
+		</thead>
+		<tbody>
+		<tr>
+			<td class="demographicData"><input type="text" id="demographicDataCurrAge" value=30></td>
+			<td class="demographicData"><input type="text" id="demographicDataLifeExpectancy" value=80></td>
+			<td class="demographicData"><input type="text" id="demographicDataInflation" value=2.5></td>
+		</tr>
+		</tbody>
+	</table>
+	</div>
+</div>
+<br>
+
+
+<div class='container dataTable'>
+	<div class='table-responsive'>
+	<table class='table table-hover' id="personalExpenseInput">
+		<thead>
+		<tr>
+			<th colspan="4">Personal expenses</th>
+		</tr>
+		<tr>
+			<td>Expense type</td><td>Expense amount</td><td>Start age</td><td>End age</td>
+		</tr>
+		</thead>
+		<tbody>
+		<tr>
+			<td class="personalExpense"><input type="text" class="personalExpenseType" value="Monthly spending"></td>
+			<td class="personalExpense"><input type="text" class="personalExpenseAmt" value=2500></td>
+			<td class="personalExpense"><input type="text" class="personalExpenseStartAge" value=30></td>
+			<td class="personalExpense"><input type="text" class="personalExpenseEndAge" value=80></td>
+		</tr>
+		<tr>
+			<td class="personalExpense"><input type="text" class="personalExpenseType" value="Car payment"></td>
+			<td class="personalExpense"><input type="text" class="personalExpenseAmt" value=1000></td>
+			<td class="personalExpense"><input type="text" class="personalExpenseStartAge" value=30></td>
+			<td class="personalExpense"><input type="text" class="personalExpenseEndAge" value=35></td>
+		</tr>
+		</tbody>
+	</table>
+
+	<button type='button' class='btn btn-default btn-md' onclick="addPERow()">Add row to personal expenses</button>
+	<br><br>
+	</div>
+</div>
+<br>
+<div class='container dataTable' id='childrenTable'>
+	<div class='table-responsive'>
+	<table id="childExpenseInput1" class="childExpenseInput table table-hover">
+		<thead>
+		<tr>
+			<th colspan="4">
+				Child expenses
+				<span class="childDetailsInput">Name: <input type="text" value="Sam" class="childName"></span>
+				<span class="childDetailsInput">Current Age: <input type="text" value=2 class="childCurrAge"></span>
+			</th>
+		</tr>
+		<tr>
+			<td>Expense type</td><td>Expense amount</td><td>Start age</td><td>End age</td>
+		</tr>
+		</thead>
+		<tbody>
+		<tr>
+			<td class="childExpense"><input type="text"  class="childExpenseType" value="Tuition"></td>
+			<td class="childExpense"><input type="text" class="childExpenseAmt" value=800></td>
+			<td class="childExpense"><input type="text" class="childExpenseStartAge" value=8></td>
+			<td class="childExpense"><input type="text" class="childExpenseEndAge" value=16></td>
+		</tr>
+		<tr>
+			<td class="childExpense"><input type="text"  class="childExpenseType" value="Piano"></td>
+			<td class="childExpense"><input type="text" class="childExpenseAmt" value=500></td>
+			<td class="childExpense"><input type="text" class="childExpenseStartAge" value=8></td>
+			<td class="childExpense"><input type="text" class="childExpenseEndAge" value=16></td>
+		</tr>
+		</tbody>
+	</table>
+
+	<button type='button' class='btn btn-default btn-md' onclick="addChildRow(1)">Add expense</button>
+	</div>
+	<br>
+	<button type='button' class='btn btn-default btn-md' id='addChildButton' data-num-children=1 onclick="addChild()">Add child</button>
+	<br>
+	<br>
+</div>
+
+
+<br>
+
+<div class='container'>
+<button type='button' class='btn btn-default btn-md' onclick="updateDataGraph()">Submit</button>
+</div>
+<br>
+
+
+
+<script>
+
+//add rows to table
+var personalExpenseRow = 
+' \
+<td class="personalExpense"><input type="text" class="personalExpenseType"></td> \
+<td class="personalExpense"><input type="text" class="personalExpenseAmt"></td> \
+<td class="personalExpense"><input type="text" class="personalExpenseStartAge"></td> \
+<td class="personalExpense"><input type="text" class="personalExpenseEndAge"></td> \
+'
+
+var childExpenseRow = 
+' \
+<td class="childExpense"><input type="text"  class="childExpenseType"></td> \
+<td class="childExpense"><input type="text" class="childExpenseAmt"></td> \
+<td class="childExpense"><input type="text" class="childExpenseStartAge"></td> \
+<td class="childExpense"><input type="text" class="childExpenseEndAge"></td> \
+'
+var childExpenseHTML = 
+' \
+	<table id="childExpenseInput[childNum]" class="childExpenseInput table table-hover"> \
+		<thead> \
+		<tr> \
+			<th colspan="4"> \
+				Child expenses \
+				<span class="childDetailsInput">Name: <input type="text" class="childName"></span> \
+				<span class="childDetailsInput">Current Age: <input type="text" class="childCurrAge"></span> \
+			</th> \
+		</tr> \
+		<tr> \
+			<td>Expense type</td><td>Expense amount</td><td>Start age</td><td>End age</td> \
+		</tr> \
+		</thead> \
+		<tbody> \
+		<tr> \
+<td class="childExpense"><input type="text"  class="childExpenseType"></td> \
+<td class="childExpense"><input type="text" class="childExpenseAmt"></td> \
+<td class="childExpense"><input type="text" class="childExpenseStartAge"></td> \
+<td class="childExpense"><input type="text" class="childExpenseEndAge"></td> \
+		</tr> \
+		<tr> \
+<td class="childExpense"><input type="text"  class="childExpenseType"></td> \
+<td class="childExpense"><input type="text" class="childExpenseAmt"></td> \
+<td class="childExpense"><input type="text" class="childExpenseStartAge"></td> \
+<td class="childExpense"><input type="text" class="childExpenseEndAge"></td> \
+		</tr> \
+		</body> \
+	</table> \
+	<button type="button" class="btn btn-default btn-md" onclick="addChildRow([childNum])">Add expense</button> \
+	<br><br> \
+'
+
+//add expense row to personal expenses table
+function addPERow() {
+	var tr = document.createElement('tr');
+	tr.innerHTML = personalExpenseRow;
+	var element = document.querySelector('#personalExpenseInput > tbody')
+	element.appendChild(tr)
+}
+
+//add child expense row to the appropriate child table
+function addChildRow(childNum) {
+	var tr = document.createElement('tr');
+	tr.innerHTML = childExpenseRow;
+	var element = document.querySelector('#childExpenseInput' + childNum + '> tbody')
+	element.appendChild(tr)
+}
+
+//add a child table, every child has an indiv expense tabl)
+function addChild(childNum) {
+	//get attribute num children, to edit child table id accordingly
+	var currNumChildren = +document.querySelector('#addChildButton').getAttribute('data-num-children') + 1
+	document.getElementById('addChildButton').setAttribute('data-num-children', currNumChildren)
+	
+	var div = document.createElement('div');
+	var childExpenseHTMLEdited = childExpenseHTML.replace(/\[childNum\]/g, currNumChildren);
+	div.className += " table-responsive";
+	div.innerHTML = childExpenseHTMLEdited;
+	var element = document.querySelector('#addChildButton');
+	var childrenTable = document.querySelector('#childrenTable');
+	childrenTable.insertBefore(div, element);
+}
+
+var margins = { top: 50, bottom: 50, left: 60, right: 300 },
+	svgHeight = 500,
+	svgWidth = 1100,
+	graphHeight = svgHeight - margins.top - margins.bottom,
+	graphWidth = svgWidth - margins.left - margins.right
+
+var xAxisBufferYear = 1
+
+var svg = 
+	d3.select('#expenditureChart').insert('svg', ":first-child")
+		.attr('width', svgWidth)
+		.attr('height', svgHeight)
+
+//y-axis label
+svg.append('g')
+	.attr('class', 'axisLabel')
+	.append('text')
+		.attr('transform', 'translate(' + (15) + ',' + (margins.top+graphHeight/2) + ')' + 'rotate(270)')
+		.text("Expenses per month ($)")
+//x-axis label
+svg.append('g')
+	.attr('class', 'axisLabel')
+	.append('text')
+		.attr('transform', 'translate(' + (margins.left+graphWidth/2) + ',' + (margins.top+graphHeight+35) + ')')
+		.text("Age")
+//graph title
+svg.append('g')
+	.attr('class', 'graphTitle')
+	.append('text')
+		.attr('transform', 'translate(' + (margins.left+graphWidth/2) + ',' + (margins.top/2) + ')')
+		.text("Projected expenditure")
+
+var graph =
+	svg.append('g')
+		.attr('transform', 'translate(' + margins.left + ',' + margins.top + ')')
+
+//clear everthing in graph
+function clearGraph() {
+	graph.selectAll('*').remove()
+
+}
+
+var clientDemographicData = {
+	initAge: 25,
+	retirementAge: 65,
+	maxAge: 80
+}
+
+var financialData = {
+	inflationRate: 2.5
+}
+
+// var personalSpendingData = {
+// 	currSpendingPerMonth: 1500,
+// 	currExtraPerMonth: 300
+// }
+// var clientChildData = [
+// 	{ initAge: 2, 
+// 		expenses: { 
+// 			tuition: { startAge: 4, stopAge: 30, spendingPerMonth: 500 },
+// 			others: { startAge: 10, stopAge: 20, spendingPerMonth: 300 }
+// 		} 
+// 	},
+// 	{ initAge: 3, 
+// 		expenses: { 
+// 			tuition: { startAge: 4, stopAge: 30, spendingPerMonth: 500 },
+// 			others: { startAge: 3, stopAge: 10, spendingPerMonth: 300 }
+// 		} 
+// 	}
+// ]
+
+var personalSpendingData = null
+var clientChildData = null
+
+function updateDataFromInput() {
+	//upgrade demographic data
+	var demographicInput = document.getElementById('demographicDataInput').getElementsByClassName('demographicData')
+
+	clientDemographicData.initAge = +document.querySelector('#demographicDataCurrAge').value
+	clientDemographicData.maxAge = +document.querySelector('#demographicDataLifeExpectancy').value
+	financialData.inflationRate = +document.querySelector('#demographicDataInflation').value
+
+	//update personal expense data from PE table
+	personalSpendingData = {}
+	var personalExpenseInput = document.querySelectorAll('td.personalExpense')
+	
+	for (var i = 0; i<personalExpenseInput.length; i+=4) {
+		var tempPersonalExpenseDetails = {}
+		tempPersonalExpenseDetails['amount'] = +personalExpenseInput[i+1].childNodes[0].value
+		tempPersonalExpenseDetails['startAge'] = +personalExpenseInput[i+2].childNodes[0].value
+		tempPersonalExpenseDetails['stopAge'] = +personalExpenseInput[i+3].childNodes[0].value
+		personalSpendingData[personalExpenseInput[i].childNodes[0].value] = tempPersonalExpenseDetails
+	}
+	//update child expense data from child expense tables
+	clientChildData = []
+	var childTables = document.getElementsByClassName('childExpenseInput')
+	for (var child=0; child<childTables.length; child++) {
+		//data for each
+		var clientChildInput = childTables[child].getElementsByClassName('childExpense')
+		for (var i = 0; i<clientChildInput.length; i+=4) {
+			var tempChildExpenseDetails = {}
+			tempChildExpenseDetails['startAge'] = +clientChildInput[i+2].childNodes[0].value
+			tempChildExpenseDetails['stopAge'] = +clientChildInput[i+3].childNodes[0].value
+			tempChildExpenseDetails['spendingPerMonth'] = +clientChildInput[i+1].childNodes[0].value
+			
+			var tempChildExpenses = {}
+			tempChildExpenses[clientChildInput[i].childNodes[0].value] = tempChildExpenseDetails
+
+			var tempChild = {}
+			tempChild['initAge'] = +childTables[child].getElementsByClassName('childCurrAge')[0].value
+			tempChild['name'] = childTables[child].getElementsByClassName('childName')[0].value
+			tempChild['expenses'] = tempChildExpenses
+
+			clientChildData.push(tempChild);
+		}
+		console.log(clientChildData)
+	}
+	//console.log(personalSpendingData)
+
+}
+
+
+//combinedData is expense data for every year (array of obj), in following format
+/*[
+{
+currAge:21, 
+child0tuition: {
+	amount: 5000,
+	category: ['child', 'child0']
+	},
+child1tuition: {
+	amount:1000,
+	category: ['child, child1']
+	},
+personalCurrExpense: {
+	amount: 2000,
+	category: ['personal']
+	}
+}
+]*/
+var combinedData = [];
+//get expense data for each individual year (age), from current age to max age
+//TODO: change max age to smth more suitable
+function combineData() {
+	combinedData = []
+	for (var age = clientDemographicData.initAge; age<=clientDemographicData.maxAge; age++) {
+		//expense data for each individual year (age)
+		var yearCombinedData = {};
+		//number of years elapsed since init age (used to calc whether to include expense in this period)
+		var yearsSinceStart = age - clientDemographicData['initAge'];
+		//yearCombinedData contains data for this age
+		yearCombinedData.age = age;
+		//save to yearCombinedData personal spending data for this particular age
+		for (var spendingData in personalSpendingData) {
+			if (age >= personalSpendingData[spendingData].startAge && 
+				age <= personalSpendingData[spendingData].stopAge) {
+				var spendingDetails = {};
+				spendingDetails.amount = personalSpendingData[spendingData].amount;
+				spendingDetails.category = ['spending'];
+				yearCombinedData[spendingData] = spendingDetails;
+			}
+		}
+
+		//save to yearCombinedData child spending data for this particular age
+		for (var childNum = 0; childNum<clientChildData.length; childNum++) {
+			//for each activity each child has, if the age is right, add an obj with the activity, cost, and categories to yearCombinedData. If age isn't right, add the activity with a cost of 0 (for the sake of transforming the array with d3.stack, all obj in array must be same length)
+			//for each child
+			for (var expenseData in clientChildData[childNum]['expenses']) {
+				//child's current age
+				var currChildAge = clientChildData[childNum]['initAge'] + yearsSinceStart;
+				//if correct year, add expense type, amount, and categories
+				if (currChildAge >= clientChildData[childNum]['expenses'][expenseData]['startAge'] && currChildAge <= clientChildData[childNum]['expenses'][expenseData]['stopAge']) {
+					var childDetails = {};
+					childDetails.amount = clientChildData[childNum]['expenses'][expenseData]['spendingPerMonth'];
+					childDetails.category = ['child', 'child'+childNum];
+					yearCombinedData[clientChildData[childNum].name + " " + expenseData] = childDetails;
+				}
+				//if wrong year, add expense data and amount of 0. Don't add categories, just ignore this expense in calcs since amount = 0
+				// else {
+				// 	yearCombinedData['child'+childNum+" "+expenseData] = { amount: 0 }
+				// }
+			}
+		}
+		combinedData.push(yearCombinedData);
+	}
+	//console.log(combinedData)
+}
+
+
+//convert the combined data into an array of arrays, in order to pass on to d3 selections
+//arrays are by year (age). Each inner array is composed of objects, which contain expense type, amount, categories, and other attributes
+//TODO: sort the resulting array to ensure order passed to bar chart later is correct
+var dataToDisplay = null
+//min/maxSpending track min and max spending accross all years, to fill in domain for yAxis
+var minSpending = 0,
+	maxSpending = 0
+
+//set the color for each expense
+//var colors = ['rgba(255,0,0,0.9)','rgba(0,255,0,0.9)','rgba(0,0,255,0.9)','rgba(0,0,0,0.9)','rgba(255,255,0,0.9)', 'rgba(255,0,255,0.9)', 'rgba(0,255,255,0.9)']
+var displayColor = {}
+
+//TODO: change the color array
+function getDisplayDataAndColor() {
+	var colors = ['green', 'blue', '#E8C44A', '#e34a33', '#c51b8a', '#47ADFF', '#B040E8', '#756bb1', '#FF7453', '#72FF4C', 'rgba(100,100,100,1)'];
+	displayColor = {};
+	dataToDisplay = [];
+	var initAge = combinedData[0].age
+	for (var year = 0; year < combinedData.length; year++) {
+		var yearCombinedData = []
+		//keep track of total expense inclusive of current expense. need this to know which y to stack chart at
+		var totalExpenseInclThis = 0
+		for (var key in combinedData[year]) {
+			if (key != 'age') {
+				var expense = {}
+				expense['expenseType'] = key
+				expense['amount'] = combinedData[year][key].amount * Math.pow(1+financialData.inflationRate/100, year)
+				expense['category'] = combinedData[year][key].category
+				expense['age'] = year + initAge
+				//get total expense inclusive of curr expense, to set y pos of bars
+				totalExpenseInclThis += expense['amount']
+				expense['totalExpenseInclThis'] = totalExpenseInclThis
+				//set a new color for this expense, if not already set
+				if (!(key in displayColor)) { 
+					displayColor[key] = colors[colors.length-1];
+					colors.pop(); 
+				}
+				yearCombinedData.push(expense)
+			}
+		}
+		dataToDisplay.push(yearCombinedData)
+		//update min and max yearly spending, for graph dim
+		if (totalExpenseInclThis > maxSpending) { maxSpending = totalExpenseInclThis; }
+		if (totalExpenseInclThis < minSpending || minSpending == 0) { minSpending = totalExpenseInclThis; }
+	}
+	console.log(dataToDisplay[1])
+}
+//console.log(dataToDisplay)
+//console.log(displayColor)
+
+//x axis
+var xAxis = null
+//width of each bar
+//bar width is responsive
+var barWidth = null
+function initXAxis() {
+	xAxis = d3.scaleLinear();
+	xAxis.range([0, graphWidth]);
+	xAxis.domain([clientDemographicData.initAge - xAxisBufferYear, clientDemographicData.maxAge + xAxisBufferYear]);
+	graph.append('g')
+		.attr('class', 'xAxis')
+		.attr('transform', 'translate(0,' + graphHeight + ')')
+		//num ticks on x axis adjusted to be responsive and look nice on screen
+		.call(d3.axisBottom(xAxis).ticks(Math.min(20, xAxis.domain()[1] - xAxis.domain()[0] + 1)));
+	barWidth = Math.min( 70, graphWidth / (xAxis.domain()[1] - xAxis.domain()[0] + 1) * 0.7 )
+}
+
+//y axis
+var yAxis = null
+function initYAxis() {
+	yAxis = d3.scaleLinear();
+	yAxis.range([graphHeight, 0]);
+	yAxis.domain([0, maxSpending]);
+	graph.append('g')
+		.attr('class', 'yAxis')
+		.call(d3.axisLeft(yAxis));
+}
+
+function addStackedBarChart() {
+	//enter the data and append the rectangles
+	graph.selectAll('fillerName')	
+		.data(dataToDisplay)
+		.enter().append('g')
+		  .selectAll('rectangles')
+			.data(function(d, i) { return d; })
+			.enter().append('rect')
+				.attr('x', function(d, i) { return xAxis(d.age) - barWidth/2; })
+				.attr('y', function(d, i) { return yAxis(d.totalExpenseInclThis) })
+				.attr('height', function(d, i) { return yAxis(maxSpending - d.amount) })
+				.attr('width', barWidth)
+				.attr('fill', function(d, i) { return displayColor[d.expenseType]; })
+				.attr('opacity', 0.7)
+				.on('mousemove', mouseOverBar)
+				.on('click', mouseClickBar)
+				.on('mouseout', mouseOutOfBar)
+}
+
+//get width of text
+var canvas = getTextWidth.canvas || (getTextWidth.canvas = document.createElement("canvas"));
+var context = canvas.getContext("2d");
+function getTextWidth(text, font) {
+    context.font = font;
+    return context.measureText(text);
+}
+
+var hoverElement = null
+//initialize tooltip element
+function initTooltip() {
+	hoverElement = graph.append('g')
+		.attr('display', 'none')
+}
+
+//show details when mouse over bar
+function mouseOverBar() {
+	//whether tooltip should point left or right, depending on mouse x position
+	var isTooltipPointRight = 
+		(xAxis(Math.round(xAxis.invert(d3.mouse(this)[0]))) + barWidth/2) > graphWidth/2 ? -1 : 1
+
+	//set x and y of hover element to mouse axis. y is same as mouse axis, y is to the right of bar.
+	hoverElement
+		.attr('transform', 'translate(' 
+			+ (xAxis(Math.round(xAxis.invert(d3.mouse(this)[0]))) + (barWidth/2 * isTooltipPointRight ))
+			+ ',' + d3.mouse(this)[1] + ')' )
+		.attr('display', null)
+
+	//remove current path and text elements, will be redrawn
+	hoverElement.selectAll('path').remove()
+	hoverElement.selectAll('text').remove()
+
+	//TODO: edit to allow >1 expense in 1 bar
+	var maxLengthText = 0
+	var addToTooltip = []
+	addToTooltip.push("Age: " + this.__data__.age)
+	var textToAdd = this.__data__.expenseType + ": $" + Math.round(this.__data__.amount)
+	//TODO: font style
+	var currLengthText = getTextWidth(textToAdd, "15px Arial").width + 10
+	if (currLengthText > maxLengthText) { 
+		maxLengthText = currLengthText
+	}
+	addToTooltip.push(textToAdd)
+
+	//draws the tooltip
+	//TODO: change 17
+	var tooltipRectHeight = (addToTooltip.length*22 + 10) * isTooltipPointRight
+	var tooltipRectWidth = maxLengthText * isTooltipPointRight
+	var tooltipTriHeight = 12 * isTooltipPointRight
+	var tooltipTriWidth = 10 * isTooltipPointRight
+	//draw path, starting from tip of arrow and moving up/right
+	var pathLines = 'M1 0 ' 
+		+ 'L' + tooltipTriWidth + ' ' + tooltipTriHeight/2 + ' '
+		+ 'L' + tooltipTriWidth + ' ' + tooltipRectHeight/2 + ' '
+		+ 'L' + (tooltipTriWidth + tooltipRectWidth) + ' ' + tooltipRectHeight/2 + ' '
+		+ 'L' + (tooltipTriWidth + tooltipRectWidth) + ' ' + (-tooltipRectHeight/2) + ' '
+		+ 'L' + tooltipTriWidth + ' ' + (-tooltipRectHeight/2) + ' '
+		+ 'L' + tooltipTriWidth + ' ' + (-tooltipTriHeight/2) + ' '
+		+ 'Z'
+
+	hoverElement.append('path')
+		.attr('d', pathLines)
+		.attr('stroke', 'black')
+		.attr('fill', 'rgba(150,150,150,1.1)')
+
+	for (var i=0; i<addToTooltip.length; i++) {
+		hoverElement.append('text')
+			.attr('class', 'tooltipText')
+			.text(addToTooltip[i])
+			//TODO: change x/y to responsive
+			.attr('x', function() { return isTooltipPointRight==1 ? 13 : - 5 - maxLengthText })
+			.attr('y', (22*i)-3 )
+	}
+}
+
+//when mouse out of bar, stop displaying tooptip
+function mouseOutOfBar() {
+	hoverElement.attr('display', 'none')
+}
+
+//when click on bar, zoom to expenditure type
+function mouseClickBar() {
+	alert('Drill in function not yet implemented');
+}
+
+function addLegend() {
+	//TOCHECK: necessarily gives correct order?
+	var ordinal = d3.scaleOrdinal()
+	  .range(Object.values(displayColor))
+	  .domain(Object.keys(displayColor))
+	  
+	console.log(Object.keys(displayColor))
+	console.log(Object.values(displayColor))
+
+	var legendX = graphWidth + 20;
+	var legendY = 10;
+
+	graph.append("g")
+	  .attr("class", "legendOrdinal")
+	  .attr("transform", "translate(" + legendX + "," + legendY + ")");
+
+	var legendOrdinal = d3.legendColor()
+	  //d3 symbol creates a path-string, for example
+	  //"M0,-8.059274488676564L9.306048591020996,
+	  //8.059274488676564 -9.306048591020996,8.059274488676564Z"
+	  .shape("path", d3.symbol().type(d3.symbolCircle).size(150)())
+	  .shapePadding(10)
+	  .title("Legend")
+	  .scale(ordinal);
+
+	svg.select(".legendOrdinal")
+	  .call(legendOrdinal);
+}
+
+//Scroll to top of page after submitting data
+function scrollToTop() {
+	document.body.scrollTop = document.documentElement.scrollTop = 0;
+}
+
+function updateDataGraph() {
+	clearGraph();
+	updateDataFromInput();
+	combineData();
+	getDisplayDataAndColor();
+	initXAxis();
+	initYAxis();
+	addStackedBarChart();
+	initTooltip();
+	addLegend();
+	scrollToTop();
+}
+updateDataGraph();
+
+</script>
+
+</body>
+</html>
